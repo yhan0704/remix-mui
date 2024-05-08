@@ -5,17 +5,22 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+import ResponsiveAppBar from "./component/Navigation";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/icon?family=Material+Icons"
+        />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
       </head>
-      <body>
+      <body style={{ margin: "0" }} suppressHydrationWarning={true}>
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -25,5 +30,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <div>
+      <ResponsiveAppBar />
+      <Outlet />
+    </div>
+  );
 }
