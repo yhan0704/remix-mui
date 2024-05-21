@@ -14,8 +14,8 @@ export default function NowPlaying() {
 
   return (
     <PageMargin>
-      <Typography>About</Typography>
-      <Typography>{nowPlayingMovies.dates.minimum}</Typography>
+      <Typography>Now Playing Movies</Typography>
+      <Typography>From {nowPlayingMovies.dates.minimum}</Typography>
       {nowPlayingMovies.results.map((nowPlayingMovie: MovieResult) => (
         <div key={nowPlayingMovie.id}>{nowPlayingMovie.original_title}</div>
       ))}
