@@ -18,7 +18,7 @@ import {
   ShoppingCart,
 } from "@mui/icons-material";
 import { Link } from "@remix-run/react";
-const pages = ["about", "nowplaying", "price"];
+const pages = ["about", "nowplaying"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(

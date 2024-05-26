@@ -1,11 +1,5 @@
-import {
-  Card,
-  CardActionArea,
-  CardContent,
-  CardMedia,
-  Typography,
-} from "@mui/material";
-import { json, useLoaderData } from "@remix-run/react";
+import { Card, CardContent, CardMedia, Typography } from "@mui/material";
+import { Link, json, useLoaderData } from "@remix-run/react";
 import { fetchNowPlayingMovies } from "~/apis/fetchNowPlayingMovies";
 import PageMargin from "~/component/PageMargin";
 import { MovieResult } from "~/types/fetchTypes";
@@ -37,7 +31,7 @@ export default function Index() {
             key={nowPlayingMovie.id}
             sx={{ width: 300, margin: "40px 20px" }}
           >
-            <CardActionArea>
+            <Link to={`/movie/detail/${nowPlayingMovie.id}`}>
               <CardMedia
                 component="img"
                 height="250"
@@ -47,7 +41,7 @@ export default function Index() {
                 }
                 alt={nowPlayingMovie.original_title}
               />
-            </CardActionArea>
+            </Link>
             <CardContent>
               <Typography gutterBottom variant="h5" component="div">
                 {nowPlayingMovie.original_title}

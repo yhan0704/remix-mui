@@ -8,6 +8,12 @@ export async function fetchNowPlayingMovies() {
       Authorization: `${process.env.SOME_SECRET}`,
     },
   })
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch now playing movies");
+    }
+
+    
     const data = res.json()
     return data
   }
