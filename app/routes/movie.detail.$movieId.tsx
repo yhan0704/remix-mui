@@ -16,7 +16,6 @@ export async function loader({ params }: LoaderFunctionArgs) {
 
 export default function MovideDetail() {
   const movieDetail = useLoaderData<typeof loader>();
-  console.log(movieDetail);
   const isSmallScreen = useMediaQuery("(max-width:850px)");
   return (
     <PageMargin>

@@ -4,8 +4,12 @@ import { Link, json, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { atom, useAtom } from "jotai";
 import PageMargin from "~/component/PageMargin";
+// import { itemsAtom, pageAtom, scrollPositionAtom } from "~/atoms";
 import { MovieResult } from "~/types/fetchTypes";
 
+export const itemsAtom = atom<MoviesResponse | null>(null);
+export const pageAtom = atom(1);
+export const scrollPositionAtom = atom(0);
 interface Movie {
   adult: boolean;
   backdrop_path: string;
@@ -36,10 +40,6 @@ interface MoviesResponse {
   total_results: number;
 }
 
-export const itemsAtom = atom<MoviesResponse | null>(null);
-export const IndexPageAtom = atom(1);
-export const IndexScrollPositionAtom = atom(0);
-
 export async function loader({ request }: LoaderFunctionArgs) {
   const url = new URL(request.url);
   const page = url.searchParams.get("page") || "1";
@@ -60,7 +60,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const data = await res.json();
   return json(data);
 }
-
 const InfiniteScroller = (props: {
   children: any;
   loading: boolean;
@@ -96,13 +95,13 @@ const InfiniteScroller = (props: {
   return <>{children}</>;
 };
 
-export default function NowPlaying() {
+export default function Index() {
   const nowPlayingMovies = useLoaderData<typeof loader>();
   const fetcher = useFetcher<MoviesResponse>();
 
   const [items, setItems] = useAtom(itemsAtom);
-  const [page, setPage] = useAtom(IndexPageAtom);
-  const [scrollPosition, setScrollPosition] = useAtom(IndexScrollPositionAtom);
+  const [page, setPage] = useAtom(pageAtom);
+  const [scrollPosition, setScrollPosition] = useAtom(scrollPositionAtom);
 
   useEffect(() => {
     if (items === null) {
@@ -154,7 +153,7 @@ export default function NowPlaying() {
           style={{
             display: "flex",
             flexFlow: "wrap",
-            justifyContent: "space-evenly",
+            justifyContent: "space-between",
           }}
         >
           {items?.results.map((nowPlayingMovie: MovieResult) => (
