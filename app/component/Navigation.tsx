@@ -13,9 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import { Menu as MenuIcon, Movie } from "@mui/icons-material";
-import { Form, Link, useSearchParams } from "@remix-run/react";
-import { atom, useSetAtom } from "jotai";
-import { searchPageAtom, searchScrollPositionAtom } from "~/routes/search";
+import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
+import { atom } from "jotai";
 
 export const inputAtom = atom<string>("");
 
@@ -44,7 +43,8 @@ function ResponsiveAppBar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-
+  const navigate = useNavigate();
+  const location = useLocation();
   return (
     <>
       <AppBar position="fixed">

@@ -146,11 +146,12 @@ export default function Search() {
       </Typography>
       <InfiniteScroller
         loadNext={() => {
-          fetcher.load(
-            `?query=${searchQuery}&page=${
-              fetcher.data ? fetcher.data.nowPlayingMovies.page + 1 : page
-            }`
-          );
+          const nextPage =
+            fetcher.data && fetcher.data.nowPlayingMovies
+              ? fetcher.data.nowPlayingMovies.page + 1
+              : nowPlayingMovies.page + 1;
+          console.log(nextPage);
+          fetcher.load(`?query=${searchQuery}&page=${nextPage}`);
         }}
         loading={fetcher.state === "loading"}
       >
