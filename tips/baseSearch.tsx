@@ -40,14 +40,15 @@ interface MoviesResponse {
   total_results: number;
 }
 
-interface Example1111 {
+interface FetcherMovies {
   nowPlayingMovies: MoviesResponse;
   searchQuery: string;
 }
 
 export async function loader({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
-  const searchQuery = url.searchParams.get("query") || "";
+  const searchQuery = url.searchParams.get("query");
+  console.log(url);
   const page = url.searchParams.get("page") || "1";
   const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${searchQuery}&include_adult=false&language=en-US&page=${page}`;
 
@@ -66,15 +67,12 @@ export async function loader({ request }: ActionFunctionArgs) {
   return json({ nowPlayingMovies, searchQuery });
 }
 
-const InfiniteScroller = ({
-  children,
-  loading,
-  loadNext,
-}: {
+const InfiniteScroller = (props: {
   children: any;
   loading: boolean;
   loadNext: () => void;
 }) => {
+  const { children, loading, loadNext } = props;
   const scrollListener = useRef(loadNext);
   useEffect(() => {
     scrollListener.current = loadNext;
@@ -105,11 +103,10 @@ const InfiniteScroller = ({
 
 export default function Search() {
   const { nowPlayingMovies, searchQuery } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher<Example1111>();
+  const fetcher = useFetcher<FetcherMovies>();
   const navigation = useNavigation();
   const [items, setItems] = useState(nowPlayingMovies);
   const [currentQuery, setCurrentQuery] = useState(searchQuery);
-  const [page, setPage] = useState(1);
 
   const searching =
     navigation.location &&
@@ -119,10 +116,8 @@ export default function Search() {
     if (searchQuery !== currentQuery) {
       setItems(nowPlayingMovies);
       setCurrentQuery(searchQuery);
-      setPage(1);
-      fetcher.data = undefined;
     }
-  }, [searchQuery, nowPlayingMovies, currentQuery, fetcher]);
+  }, [searchQuery, nowPlayingMovies, currentQuery]);
 
   useEffect(() => {
     if (!fetcher.data || fetcher.state === "loading") {
@@ -131,20 +126,12 @@ export default function Search() {
 
     if (fetcher.data) {
       const newItems = fetcher.data.nowPlayingMovies.results;
-      setItems((prevItems: MoviesResponse) => ({
+      setItems((prevItems) => ({
         ...prevItems,
         results: [...prevItems.results, ...newItems],
       }));
     }
-  }, [currentQuery, fetcher.data, fetcher.state, searchQuery]);
-
-  const loadNextPage = () => {
-    if (searchQuery === currentQuery && !searching) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetcher.load(`?query=${currentQuery}&page=${nextPage}`);
-    }
-  };
+  }, [fetcher.data]);
 
   return (
     <PageMargin>
@@ -152,7 +139,14 @@ export default function Search() {
         Result from your search : {searchQuery}
       </Typography>
       <InfiniteScroller
-        loadNext={loadNextPage}
+        loadNext={() => {
+          const nextPage =
+            fetcher.data && fetcher.data.nowPlayingMovies
+              ? fetcher.data.nowPlayingMovies.page + 1
+              : nowPlayingMovies.page + 1;
+          console.log(nextPage);
+          fetcher.load(`?query=${searchQuery}&page=${nextPage}`);
+        }}
         loading={fetcher.state === "loading"}
       >
         {searching ? (

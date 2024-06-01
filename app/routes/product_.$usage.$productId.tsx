@@ -3,7 +3,6 @@ import { LoaderFunctionArgs, json } from "@remix-run/node";
 import PageMargin from "~/component/PageMargin";
 
 export async function loader({ params }: LoaderFunctionArgs) {
-  console.log(params);
   const { usage, productId } = params;
 
   if (!usage || !productId) {

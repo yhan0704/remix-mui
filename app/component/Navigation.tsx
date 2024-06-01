@@ -11,15 +11,61 @@ import {
   Toolbar,
   Tooltip,
   Typography,
+  alpha,
+  styled,
+  InputBase,
 } from "@mui/material";
-import { Menu as MenuIcon, Movie } from "@mui/icons-material";
-import { Form, Link, useLocation, useNavigate } from "@remix-run/react";
-import { atom } from "jotai";
-
-export const inputAtom = atom<string>("");
+import {
+  Menu as MenuIcon,
+  Search as SearchIcon,
+  Movie,
+} from "@mui/icons-material";
+import { Form, Link } from "@remix-run/react";
 
 const pages = ["about", "nowplaying"];
 const settings = ["Profile", "Account", "Dashboard", "Logout"];
+
+const Search = styled("div")(({ theme }) => ({
+  position: "relative",
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  "&:hover": {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginLeft: 0,
+  width: "100%",
+  [theme.breakpoints.up("sm")]: {
+    marginLeft: theme.spacing(1),
+    width: "auto",
+  },
+}));
+
+const SearchIconWrapper = styled("div")(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: "100%",
+  position: "absolute",
+  pointerEvents: "none",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: "inherit",
+  width: "100%",
+  "& .MuiInputBase-input": {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create("width"),
+    [theme.breakpoints.up("sm")]: {
+      width: "12ch",
+      "&:focus": {
+        width: "20ch",
+      },
+    },
+  },
+}));
 
 function ResponsiveAppBar() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -43,8 +89,7 @@ function ResponsiveAppBar() {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
-  const navigate = useNavigate();
-  const location = useLocation();
+
   return (
     <>
       <AppBar position="fixed">
@@ -148,7 +193,7 @@ function ResponsiveAppBar() {
                 </Button>
               ))}
             </Box>
-            <Form method="get" action={`/search`}>
+            <Form method="get" action="/search">
               <input type="text" name="query" />
               <button type="submit">Search</button>
             </Form>
