@@ -14,3 +14,21 @@ export type MovieResult = {
     vote_average: number;
     vote_count: number;
   }
+
+export type Dates = {
+  maximum: string;
+  minimum: string;
+}
+
+export type MoviesResponse ={
+  dates: Dates;
+  page: number;
+  results: MovieResult[];
+  total_pages: number;
+  total_results: number;
+}
+
+export type FetcherMovieResponse = {
+  nowPlayingMovies: MoviesResponse;
+  searchQuery: string;
+}
