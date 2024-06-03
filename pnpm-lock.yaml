@@ -47,9 +47,6 @@ dependencies:
   react-infinite-scroll-component:
     specifier: ^6.1.0
     version: 6.1.0(react@18.3.0-canary-01ab35a9a-20240228)
-  react-infinite-scroller:
-    specifier: ^1.2.6
-    version: 1.2.6(react@18.3.0-canary-01ab35a9a-20240228)
   react-slick:
     specifier: ^0.30.2
     version: 0.30.2(react-dom@18.3.0-canary-01ab35a9a-20240228)(react@18.3.0-canary-01ab35a9a-20240228)
@@ -76,9 +73,6 @@ devDependencies:
   '@types/react-dom':
     specifier: ^18.2.7
     version: 18.3.0
-  '@types/react-infinite-scroller':
-    specifier: ^1.2.5
-    version: 1.2.5
   '@typescript-eslint/eslint-plugin':
     specifier: ^6.7.4
     version: 6.21.0(@typescript-eslint/parser@6.21.0)(eslint@8.57.0)(typescript@5.4.5)
@@ -1788,12 +1782,6 @@ packages:
 
   /@types/react-dom@18.3.0:
     resolution: {integrity: sha512-EhwApuTmMBmXuFOikhQLIBUn6uFg81SwLMOAUgodJF14SOBOCMdU04gDoYi0WOJJHD144TL32z4yDqCW3dnkQg==}
-    dependencies:
-      '@types/react': 18.3.3
-    dev: true
-
-  /@types/react-infinite-scroller@1.2.5:
-    resolution: {integrity: sha512-fJU1jhMgoL6NJFrqTM0Ob7tnd2sQWGxe2ESwiU6FZWbJK/VO/Er5+AOhc+e2zbT0dk5pLygqctsulOLJ8xnSzw==}
     dependencies:
       '@types/react': 18.3.3
     dev: true
@@ -5555,15 +5543,6 @@ packages:
     dependencies:
       react: 18.3.0-canary-01ab35a9a-20240228
       throttle-debounce: 2.3.0
-    dev: false
-
-  /react-infinite-scroller@1.2.6(react@18.3.0-canary-01ab35a9a-20240228):
-    resolution: {integrity: sha512-mGdMyOD00YArJ1S1F3TVU9y4fGSfVVl6p5gh/Vt4u99CJOptfVu/q5V/Wlle72TMgYlBwIhbxK5wF0C/R33PXQ==}
-    peerDependencies:
-      react: ^0.14.9 || ^15.3.0 || ^16.0.0 || ^17.0.0 || ^18.0.0
-    dependencies:
-      prop-types: 15.8.1
-      react: 18.3.0-canary-01ab35a9a-20240228
     dev: false
 
   /react-is@16.13.1:
