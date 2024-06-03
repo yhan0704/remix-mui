@@ -24,6 +24,7 @@
     "react": "18.3.0-canary-01ab35a9a-20240228",
     "react-dom": "18.3.0-canary-01ab35a9a-20240228",
     "react-icons": "^5.2.1",
+    "react-infinite-scroll-component": "^6.1.0",
     "react-slick": "^0.30.2",
     "slick-carousel": "^1.8.1",
     "swiper": "^11.1.3",
