@@ -1,40 +1,10 @@
-import { Card, CardContent, CardMedia, Typography } from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
 import { LoaderFunctionArgs } from "@remix-run/node";
 import { Link, json, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect, useRef } from "react";
 import { atom, useAtom } from "jotai";
 import PageMargin from "~/component/PageMargin";
-import { MovieResult } from "~/types/fetchTypes";
-
-interface Movie {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  release_date: string;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-}
-
-interface Dates {
-  maximum: string;
-  minimum: string;
-}
-
-interface MoviesResponse {
-  dates: Dates;
-  page: number;
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
-}
+import { MovieResult, MoviesResponse } from "~/types/fetchTypes";
 
 export const itemsAtom = atom<MoviesResponse | null>(null);
 export const IndexPageAtom = atom(1);
@@ -62,7 +32,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 }
 
 const InfiniteScroller = (props: {
-  children: any;
+  children: React.ReactNode;
   loading: boolean;
   loadNext: () => void;
 }) => {
@@ -114,6 +84,8 @@ export default function NowPlaying() {
   useEffect(() => {
     if (fetcher.data && fetcher.state !== "loading") {
       const newItems = fetcher.data.results;
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      //@ts-expect-error
       setItems((prevItems) => {
         if (prevItems === null) return fetcher.data;
         return {
@@ -160,20 +132,18 @@ export default function NowPlaying() {
           {items?.results.map((nowPlayingMovie: MovieResult) => (
             <Card
               key={nowPlayingMovie.id}
-              sx={{ width: 300, margin: "40px 20px" }}
+              sx={{ width: 300, margin: "40px 20px", textAlign: "center" }}
             >
               <Link
                 to={`/movie/detail/${nowPlayingMovie.id}`}
                 onClick={saveScrollPosition}
               >
-                <CardMedia
-                  component="img"
-                  height="250"
+                <img
+                  alt={nowPlayingMovie.original_title}
                   src={
-                    "https://image.tmdb.org/t/p/w500/" +
+                    "https://image.tmdb.org/t/p/w185/" +
                     nowPlayingMovie.poster_path
                   }
-                  alt={nowPlayingMovie.original_title}
                 />
               </Link>
               <CardContent>
