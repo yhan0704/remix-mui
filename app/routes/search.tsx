@@ -1,4 +1,4 @@
-import { Card, CardContent, CardMedia, Typography } from "@mui/material";
+import { Card, CardContent, Typography } from "@mui/material";
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import {
   Link,
@@ -6,51 +6,24 @@ import {
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import PageMargin from "~/component/PageMargin";
-import { MovieResult } from "~/types/fetchTypes";
+import {
+  FetcherMovieResponse,
+  MovieResult,
+  MoviesResponse,
+} from "~/types/fetchTypes";
+import InfiniteScroll from "react-infinite-scroll-component";
+import { atom, useAtom } from "jotai";
 
-interface Movie {
-  adult: boolean;
-  backdrop_path: string;
-  genre_ids: number[];
-  id: number;
-  original_language: string;
-  original_title: string;
-  overview: string;
-  popularity: number;
-  poster_path: string;
-  release_date: string;
-  title: string;
-  video: boolean;
-  vote_average: number;
-  vote_count: number;
-}
-
-interface Dates {
-  maximum: string;
-  minimum: string;
-}
-
-interface MoviesResponse {
-  dates: Dates;
-  page: number;
-  results: Movie[];
-  total_pages: number;
-  total_results: number;
-}
-
-interface Example1111 {
-  nowPlayingMovies: MoviesResponse;
-  searchQuery: string;
-}
+export const itemsAtom = atom<MoviesResponse | null>(null);
+export const IndexPageAtom = atom(1);
 
 export async function loader({ request }: ActionFunctionArgs) {
   const url = new URL(request.url);
   const searchQuery = url.searchParams.get("query") || "";
-  const page = url.searchParams.get("page") || "1";
-  const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${searchQuery}&include_adult=false&language=en-US&page=${page}`;
-
+  const resultPage = url.searchParams.get("page") || "1";
+  const apiUrl = `https://api.themoviedb.org/3/search/movie?query=${searchQuery}&include_adult=false&language=en-US&page=${resultPage}`;
   const res = await fetch(apiUrl, {
     method: "GET",
     headers: {
@@ -66,63 +39,21 @@ export async function loader({ request }: ActionFunctionArgs) {
   return json({ nowPlayingMovies, searchQuery });
 }
 
-const InfiniteScroller = ({
-  children,
-  loading,
-  loadNext,
-}: {
-  children: any;
-  loading: boolean;
-  loadNext: () => void;
-}) => {
-  const scrollListener = useRef(loadNext);
-  useEffect(() => {
-    scrollListener.current = loadNext;
-  }, [loadNext]);
-
-  const onScroll = () => {
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollDifference = Math.floor(window.innerHeight + window.scrollY);
-    const scrollEnded = documentHeight === scrollDifference;
-
-    if (scrollEnded && !loading) {
-      scrollListener.current();
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", onScroll);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
-  return <>{children}</>;
-};
-
 export default function Search() {
   const { nowPlayingMovies, searchQuery } = useLoaderData<typeof loader>();
-  const fetcher = useFetcher<Example1111>();
+  const [items, setItems] = useAtom(itemsAtom);
+  const [page, setPage] = useAtom(IndexPageAtom);
+  const fetcher = useFetcher<FetcherMovieResponse>();
   const navigation = useNavigation();
-  const [items, setItems] = useState(nowPlayingMovies);
-  const [currentQuery, setCurrentQuery] = useState(searchQuery);
-  const [page, setPage] = useState(1);
-
   const searching =
     navigation.location &&
     new URLSearchParams(navigation.location.search).has("query");
 
   useEffect(() => {
-    if (searchQuery !== currentQuery) {
+    if (items === null) {
       setItems(nowPlayingMovies);
-      setCurrentQuery(searchQuery);
-      setPage(1);
-      fetcher.data = undefined;
     }
-  }, [searchQuery, nowPlayingMovies, currentQuery, fetcher]);
+  }, [items]);
 
   useEffect(() => {
     if (!fetcher.data || fetcher.state === "loading") {
@@ -131,19 +62,18 @@ export default function Search() {
 
     if (fetcher.data) {
       const newItems = fetcher.data.nowPlayingMovies.results;
-      setItems((prevItems: MoviesResponse) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setItems((prevItems: any) => ({
         ...prevItems,
         results: [...prevItems.results, ...newItems],
       }));
     }
-  }, [currentQuery, fetcher.data, fetcher.state, searchQuery]);
+  }, [fetcher.data, fetcher.state]);
 
-  const loadNextPage = () => {
-    if (searchQuery === currentQuery && !searching) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetcher.load(`?query=${currentQuery}&page=${nextPage}`);
-    }
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetcher.load(`?query=${searchQuery}&page=${nextPage}`);
   };
 
   return (
@@ -151,55 +81,66 @@ export default function Search() {
       <Typography variant="h6" style={{ textAlign: "center" }}>
         Result from your search : {searchQuery}
       </Typography>
-      <InfiniteScroller
-        loadNext={loadNextPage}
-        loading={fetcher.state === "loading"}
-      >
-        {searching ? (
-          "loading..."
-        ) : (
-          <div
-            style={{
-              display: "flex",
-              flexFlow: "wrap",
-              justifyContent: "space-evenly",
-            }}
-          >
-            {items?.results.map((movie: MovieResult) => (
-              <Card key={movie.id} sx={{ width: 300, margin: "40px 20px" }}>
-                <Link to={`/movie/detail/${movie.id}`}>
-                  <CardMedia
-                    component="img"
-                    height="250"
-                    src={"https://image.tmdb.org/t/p/w500/" + movie.poster_path}
-                    alt={movie.original_title}
-                  />
-                </Link>
-                <CardContent>
-                  <Typography gutterBottom variant="h5" component="div">
-                    {movie.original_title}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      display: "-webkit-box",
-                      WebkitLineClamp: "3",
-                      WebkitBoxOrient: "vertical",
-                    }}
-                    variant="body2"
-                    color="text.secondary"
-                  >
-                    {movie.overview
-                      ? movie.overview
-                      : "No overview for this movie."}
-                  </Typography>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-      </InfiniteScroller>
+      <div>
+        <InfiniteScroll
+          next={loadMore}
+          dataLength={items ? items.results.length : 0}
+          loader={
+            <div className="loader" key={0}>
+              Loading ...
+            </div>
+          }
+          hasMore={true}
+        >
+          {searching ? (
+            "loading..."
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexFlow: "wrap",
+                justifyContent: "space-evenly",
+              }}
+            >
+              {items?.results.map((movie: MovieResult) => (
+                <Card
+                  key={movie.id}
+                  sx={{ width: 300, margin: "40px 20px", textAlign: "center" }}
+                >
+                  <Link to={`/movie/detail/${movie.id}`}>
+                    <img
+                      alt={movie.original_title}
+                      src={
+                        "https://image.tmdb.org/t/p/w185/" + movie.poster_path
+                      }
+                    />
+                  </Link>
+                  <CardContent>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {movie.original_title}
+                    </Typography>
+                    <Typography
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: "3",
+                        WebkitBoxOrient: "vertical",
+                      }}
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      {movie.overview
+                        ? movie.overview
+                        : "No overview for this movie."}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </InfiniteScroll>
+      </div>
     </PageMargin>
   );
 }
