@@ -7,15 +7,17 @@ import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ params }: LoaderFunctionArgs) {
   invariant(params.movieId, "Missing movieId param");
-  const data = await fetchMovieDatail(params.movieId);
-  if (data.success === false) {
-    throw new Response("Could not find a movie", { status: 404 });
-  }
-  return json(data);
+  const fetchMovieDatails = `https://api.themoviedb.org/3/movie/${params.movieId}?language=en-US`;
+  const fetchMovieReviews = `https://api.themoviedb.org/3/movie/${params.movieId}/reviews?language=en-US&page=1`;
+  const details = await fetchMovieDatail(fetchMovieDatails);
+  const reviews = await fetchMovieDatail(fetchMovieReviews);
+
+  return json({ details, reviews });
 }
 
 export default function MovideDetail() {
-  const movieDetail = useLoaderData<typeof loader>();
+  const { details, reviews } = useLoaderData<typeof loader>();
+
   const isSmallScreen = useMediaQuery("(max-width:850px)");
   return (
     <PageMargin>
@@ -31,8 +33,8 @@ export default function MovideDetail() {
       >
         <div>
           <img
-            alt={movieDetail.poster_path}
-            src={"https://image.tmdb.org/t/p/w400/" + movieDetail.poster_path}
+            alt={details.poster_path}
+            src={"https://image.tmdb.org/t/p/w342/" + details.poster_path}
           />
         </div>
         <div
@@ -46,22 +48,25 @@ export default function MovideDetail() {
           }}
         >
           <Typography style={{ lineHeight: 2.5 }}>
-            Title: {movieDetail.original_title}
+            Title: {details.original_title}
+          </Typography>
+          <Typography style={{ lineHeight: 2 }}>
+            Relase Date: {details.release_date}
           </Typography>
           <Typography style={{ lineHeight: 2.5 }}>
             Genres:
-            {movieDetail.genres.map((genre: any, index: number) => (
+            {details.genres.map((genre: any, index: number) => (
               <span key={genre.id}>
                 {genre.name}
-                {index < movieDetail.genres.length - 1 ? ", " : ""}
+                {index < details.genres.length - 1 ? ", " : ""}
               </span>
             ))}
             <br />
           </Typography>
           <Typography style={{ lineHeight: 2.5 }}>Overview:</Typography>
           <Typography style={{ lineHeight: 2 }}>
-            {movieDetail.overview}
-          </Typography>
+            {details.overview}
+          </Typography>{" "}
         </div>
       </div>
     </PageMargin>
