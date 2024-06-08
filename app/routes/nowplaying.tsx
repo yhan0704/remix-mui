@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { atom, useAtom } from "jotai";
 import PageMargin from "~/component/PageMargin";
 import { MovieResult, MoviesResponse } from "~/types/fetchTypes";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 export const itemsAtom = atom<MoviesResponse | null>(null);
 export const IndexPageAtom = atom(1);
@@ -31,80 +32,38 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return json(data);
 }
 
-const InfiniteScroller = (props: {
-  children: React.ReactNode;
-  loading: boolean;
-  loadNext: () => void;
-}) => {
-  const { children, loading, loadNext } = props;
-  const scrollListener = useRef(loadNext);
-
-  useEffect(() => {
-    scrollListener.current = loadNext;
-  }, [loadNext]);
-
-  const onScroll = () => {
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollDifference = Math.floor(window.innerHeight + window.scrollY);
-    const scrollEnded = documentHeight === scrollDifference;
-
-    if (scrollEnded && !loading) {
-      scrollListener.current();
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      window.addEventListener("scroll", onScroll);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, []);
-
-  return <>{children}</>;
-};
-
 export default function NowPlaying() {
   const nowPlayingMovies = useLoaderData<typeof loader>();
   const fetcher = useFetcher<MoviesResponse>();
 
   const [items, setItems] = useAtom(itemsAtom);
   const [page, setPage] = useAtom(IndexPageAtom);
-  const [scrollPosition, setScrollPosition] = useAtom(IndexScrollPositionAtom);
 
   useEffect(() => {
     if (items === null) {
       setItems(nowPlayingMovies);
-      setPage(nowPlayingMovies.page);
     }
-  }, [nowPlayingMovies, items, setItems, setPage]);
+  }, [items]);
 
   useEffect(() => {
-    if (fetcher.data && fetcher.state !== "loading") {
+    if (!fetcher.data || fetcher.state === "loading") {
+      return;
+    }
+
+    if (fetcher.data) {
       const newItems = fetcher.data.results;
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      //@ts-expect-error
-      setItems((prevItems) => {
-        if (prevItems === null) return fetcher.data;
-        return {
-          ...prevItems,
-          results: [...prevItems.results, ...newItems],
-        };
-      });
-      setPage(fetcher.data.page);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setItems((prevItems: any) => ({
+        ...prevItems,
+        results: [...prevItems.results, ...newItems],
+      }));
     }
-  }, [fetcher.data, fetcher.state, setItems, setPage]);
+  }, [fetcher.data, fetcher.state]);
 
-  useEffect(() => {
-    if (scrollPosition) {
-      window.scrollTo(0, scrollPosition);
-    }
-  }, [scrollPosition]);
-
-  const saveScrollPosition = () => {
-    setScrollPosition(window.scrollY);
+  const loadMore = () => {
+    const nextPage = page + 1;
+    setPage(nextPage);
+    fetcher.load(`?index&page=${nextPage}`);
   };
 
   return (
@@ -115,12 +74,15 @@ export default function NowPlaying() {
       <Typography variant="h6" style={{ textAlign: "center" }}>
         From {items?.dates.minimum}
       </Typography>
-      <InfiniteScroller
-        loadNext={() => {
-          const nextPage = page + 1;
-          fetcher.load(`?index&page=${nextPage}`);
-        }}
-        loading={fetcher.state === "loading"}
+      <InfiniteScroll
+        next={loadMore}
+        dataLength={items ? items.results.length : 0}
+        loader={
+          <div className="loader" key={0}>
+            Loading ...
+          </div>
+        }
+        hasMore={true}
       >
         <div
           style={{
@@ -134,10 +96,7 @@ export default function NowPlaying() {
               key={nowPlayingMovie.id}
               sx={{ width: 300, margin: "40px 20px", textAlign: "center" }}
             >
-              <Link
-                to={`/movie/detail/${nowPlayingMovie.id}`}
-                onClick={saveScrollPosition}
-              >
+              <Link to={`/movie/detail/${nowPlayingMovie.id}`}>
                 <img
                   alt={nowPlayingMovie.original_title}
                   src={
@@ -169,7 +128,7 @@ export default function NowPlaying() {
             </Card>
           ))}
         </div>
-      </InfiniteScroller>
+      </InfiniteScroll>
     </PageMargin>
   );
 }
