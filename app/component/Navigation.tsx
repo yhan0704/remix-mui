@@ -140,7 +140,7 @@ function ResponsiveAppBar() {
                 </Button>
               ))}
             </Box>
-            <Form method="get" action="/search" reloadDocument>
+            <Form method="get" action="/search">
               <input id="q" type="text" name="query" />
               <button type="submit">Search</button>
             </Form>
